@@ -1,6 +1,6 @@
 const express = require("express")
 
-const app = express()
+//const app = express()
 
 const router = express.Router()
 
@@ -16,6 +16,5 @@ router.route("/").get(getGoals).post(setGoal)
 router.route("/:id").put(updateGoal).delete(deleteGoal)
 
 //router.delete("/:id", deleteGoal)
-
 
 module.exports = router
