@@ -3,6 +3,14 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs")
 const User = require("../models/userModel")
 
+const generate_token = (id)=>{
+    
+    return jwt.sign({id},process.env.JWT_SECRET,{
+        expiresIn: '30d'
+    })
+}
+
+
 // desc  register new user
 // route POST /api/users
 // access public 
@@ -36,7 +44,7 @@ const registerUser = asyncHandler(async(req,res) => {
 
     if(user){
         res.status(201).json(
-            {_id:user.id,name:user.name,email:user.email}
+            {_id:user._id,name:user.name,email:user.email,token:generate_token(user._id)}
         )
     }else{
         res.status(400)
@@ -49,7 +57,18 @@ const registerUser = asyncHandler(async(req,res) => {
 // route POST /api/users/login
 // access public 
 const loginUser = asyncHandler(async(req,res) => {
-    res.json({message:"login User"})
+    const {email,password} = req.body
+    const user = await User.findOne({email})
+
+    if(user&&(await bcrypt.compare(password,user.password))){
+        res.status(200).json(
+            {_id:user.id,name:user.name,email:user.email,token:generate_token(user._id)}
+        )
+    }else{
+        res.status(400)
+        throw new Error("Invalid credentials")
+    }
+
 })
 
 
@@ -59,6 +78,7 @@ const loginUser = asyncHandler(async(req,res) => {
 const getMe = asyncHandler(async(req,res) => {
     res.json({message:"user data display"})
 })
+
 
 module.exports = {
 
