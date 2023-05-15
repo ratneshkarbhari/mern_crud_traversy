@@ -6,7 +6,7 @@ const Goal = require("../models/goalModel")
 // access public 
 const getGoals = asyncHandler(async(req,res) => {
 
-    const goals = await Goal.find()
+    const goals = await Goal.find({user:req.user.id})
     
     res.status(200).json(goals)
 
@@ -36,6 +36,18 @@ const updateGoal = asyncHandler(async(req,res)=>{
         res.status(400)
         throw new Error("Goal not found")
     }
+    user = await User.findById(req.user.id)
+
+    if(!user){
+        res.status(401)
+        throw new Error("User not found")
+    }
+
+    if(goal.user.toString()!=user.id){
+        res.status(401)
+        throw new Error("User not authorized to update")
+    }
+
     const updatedGoal = await Goal.findByIdAndUpdate(req.params.id,{
         text: req.body.text
     }, {
@@ -51,7 +63,21 @@ const deleteGoal = asyncHandler(async(req,res)=>{
         res.status(400)
         throw new Error("Goal not found")
     }
-    const updatedGoal = await Goal.findByIdAndDelete(req.params.id)
+
+
+    user = await User.findById(req.user.id)
+
+    if(!user){
+        res.status(401)
+        throw new Error("User not found")
+    }
+
+    if(goal.user.toString()!=user.id){
+        res.status(401)
+        throw new Error("User not authorized to delete")
+    }
+
+    const deleteGoal = await Goal.findByIdAndDelete(req.params.id)
     res.status(200).json({message:'Goal Deleted'})
 
     
